@@ -8,7 +8,6 @@ function pass() {
   return new Response(null, {
     headers: {
       "x-middleware-next": "1",
-      "x-page-map": "on",
     },
   });
 }

@@ -49,6 +49,14 @@
       "destination": "/ch/index.html"
     },
     {
+      "source": "/service",
+      "destination": "/service.html"
+    },
+    {
+      "source": "/service/",
+      "destination": "/service.html"
+    },
+    {
       "source": "/ch/index",
       "destination": "/ch/index.html"
     },
@@ -69,6 +77,6 @@
   "buildCommand": "",
   "outputDirectory": ".",
   "proxy": {
-    "entrypoint": "middleware.js"
+    "entrypoint": "middleware.mjs"
   }
 }
