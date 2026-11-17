@@ -1,6 +1,48 @@
 {
   "cleanUrls": true,
   "trailingSlash": false,
+  "redirects": [
+    {
+      "source": "/static/:path*",
+      "destination": "https://www.cib.npa.gov.tw/static/:path*"
+    },
+    {
+      "source": "/userfiles/:path*",
+      "destination": "https://www.cib.npa.gov.tw/userfiles/:path*"
+    },
+    {
+      "source": "/menuDoc/:path*",
+      "destination": "https://www.cib.npa.gov.tw/menuDoc/:path*"
+    },
+    {
+      "source": "/:lang/index/viewtopimage",
+      "destination": "https://www.cib.npa.gov.tw/:lang/index/viewtopimage"
+    },
+    {
+      "source": "/:lang/index/viewBottomimage",
+      "destination": "https://www.cib.npa.gov.tw/:lang/index/viewBottomimage"
+    },
+    {
+      "source": "/:lang/index/viewbannerimage",
+      "destination": "https://www.cib.npa.gov.tw/:lang/index/viewbannerimage"
+    },
+    {
+      "source": "/:lang/index/viewimage",
+      "destination": "https://www.cib.npa.gov.tw/:lang/index/viewimage"
+    },
+    {
+      "source": "/:lang/app/:section/image",
+      "destination": "https://www.cib.npa.gov.tw/:lang/app/:section/image"
+    },
+    {
+      "source": "/:lang/app/:section/doc",
+      "destination": "https://www.cib.npa.gov.tw/:lang/app/:section/doc"
+    },
+    {
+      "source": "/:lang/app/openData/data",
+      "destination": "https://www.cib.npa.gov.tw/:lang/app/openData/data"
+    }
+  ],
   "rewrites": [
     { "source": "/", "destination": "/ch/index.html" },
     { "source": "/ch/index", "destination": "/ch/index.html" },
