@@ -1,0 +1,11 @@
+{
+  "cleanUrls": true,
+  "trailingSlash": false,
+  "rewrites": [
+    { "source": "/", "destination": "/ch/index.html" },
+    { "source": "/ch/index", "destination": "/ch/index.html" },
+    { "source": "/en/index", "destination": "/en/index.html" },
+    { "source": "/ch/sitemap", "destination": "/ch/sitemap.html" },
+    { "source": "/en/sitemap", "destination": "/en/sitemap.html" }
+  ]
+}
