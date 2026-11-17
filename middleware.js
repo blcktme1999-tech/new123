@@ -5,7 +5,12 @@ export const config = {
 };
 
 function pass() {
-  return new Response(null, { headers: { "x-middleware-next": "1" } });
+  return new Response(null, {
+    headers: {
+      "x-middleware-next": "1",
+      "x-page-map": "on",
+    },
+  });
 }
 
 function routeKey(url) {
@@ -22,9 +27,7 @@ export default function middleware(request) {
   if (!url.search) return pass();
   const file = pages[routeKey(url)];
   if (!file) return pass();
-  const target = new URL(file, request.url);
-  target.search = "";
   return new Response(null, {
-    headers: { "x-middleware-rewrite": target.toString() },
+    headers: { "x-middleware-rewrite": file },
   });
 }
