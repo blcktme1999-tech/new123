@@ -1,4 +1,4 @@
-const { getJsonBody, getSupabase, json, methodNotAllowed, serviceErrorMessage } = require('../_lib/service');
+import { getJsonBody, getSupabase, json, methodNotAllowed, serviceErrorMessage } from '../_lib/service.js';
 
 function normalizeNationalId(value) {
   return String(value || '').trim().toUpperCase().replace(/\s+/g, '');
@@ -27,4 +27,4 @@ async function handler(req, res) {
   }
 }
 
-module.exports = handler;
+export default handler;

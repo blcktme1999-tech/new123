@@ -1,4 +1,4 @@
-const { getConfig, getSupabase, json, methodNotAllowed, serviceErrorMessage, VIDEO_BUCKET } = require('./_lib/service');
+import { getConfig, getSupabase, json, methodNotAllowed, serviceErrorMessage, VIDEO_BUCKET } from './_lib/service.js';
 
 function safeError(error) {
   return {
@@ -22,7 +22,7 @@ function safeSupabaseUrl(value) {
   }
 }
 
-module.exports = async function handler(req, res) {
+export default async function handler(req, res) {
   if (req.method !== 'GET') return methodNotAllowed(res, ['GET']);
   const checks = {
     env: {

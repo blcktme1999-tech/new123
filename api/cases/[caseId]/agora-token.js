@@ -1,7 +1,8 @@
-const { getConfig, getSupabase, json, methodNotAllowed, requireCaseAccess } = require('../../_lib/service');
-const { RtcRole, RtcTokenBuilder } = require('agora-token');
+import { getConfig, getSupabase, json, methodNotAllowed, requireCaseAccess } from '../../_lib/service.js';
+import agoraToken from 'agora-token';
+const { RtcRole, RtcTokenBuilder } = agoraToken;
 
-module.exports = async function handler(req, res) {
+export default async function handler(req, res) {
   if (req.method !== 'POST') return methodNotAllowed(res, ['POST']);
   try {
     const config = getConfig();

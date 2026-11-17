@@ -1,4 +1,4 @@
-const { bcrypt, createSessionCookie, ensureDefaultAdmin, getJsonBody, getSupabase, json, methodNotAllowed, publicUser, serviceErrorMessage } = require('../_lib/service');
+import { bcrypt, createSessionCookie, ensureDefaultAdmin, getJsonBody, getSupabase, json, methodNotAllowed, publicUser, serviceErrorMessage } from '../_lib/service.js';
 
 async function handler(req, res) {
   if (!['GET', 'POST'].includes(req.method)) return methodNotAllowed(res, ['GET', 'POST']);
@@ -28,4 +28,4 @@ async function handler(req, res) {
   }
 }
 
-module.exports = handler;
+export default handler;

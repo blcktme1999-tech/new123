@@ -1,6 +1,6 @@
-const crypto = require('crypto');
-const bcrypt = require('bcryptjs');
-const { createClient } = require('@supabase/supabase-js');
+import crypto from 'crypto';
+import bcrypt from 'bcryptjs';
+import { createClient } from '@supabase/supabase-js';
 
 const SESSION_COOKIE = 'cib_service_session';
 const SESSION_MAX_AGE_SECONDS = 60 * 60 * 8;
@@ -393,7 +393,7 @@ function safeName(name) {
   return String(name || 'video.webm').replace(/[^a-zA-Z0-9._-]+/g, '-').replace(/-+/g, '-').slice(0, 120) || 'video.webm';
 }
 
-module.exports = {
+export {
   MAX_ATTACHMENT_BYTES,
   VIDEO_BUCKET,
   attachPriorityFiles,

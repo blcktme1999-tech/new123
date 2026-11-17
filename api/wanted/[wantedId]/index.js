@@ -1,4 +1,4 @@
-const { VIDEO_BUCKET, getSupabase, json, methodNotAllowed, requireStaff, serviceErrorMessage } = require('../../_lib/service');
+import { VIDEO_BUCKET, getSupabase, json, methodNotAllowed, requireStaff, serviceErrorMessage } from '../../_lib/service.js';
 
 async function handler(req, res) {
   if (req.method !== 'DELETE') return methodNotAllowed(res, ['DELETE']);
@@ -21,4 +21,4 @@ async function handler(req, res) {
   }
 }
 
-module.exports = handler;
+export default handler;

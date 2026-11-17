@@ -1,4 +1,4 @@
-const { getJsonBody, getSupabase, json, methodNotAllowed, normalizeCaseNumber, normalizeCertificateNumber, publicCase, publicFile, serviceErrorMessage } = require('../_lib/service');
+import { getJsonBody, getSupabase, json, methodNotAllowed, normalizeCaseNumber, normalizeCertificateNumber, publicCase, publicFile, serviceErrorMessage } from '../_lib/service.js';
 
 async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -43,4 +43,4 @@ async function handler(req, res) {
   }
 }
 
-module.exports = handler;
+export default handler;

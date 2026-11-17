@@ -1,5 +1,5 @@
-const crypto = require('crypto');
-const { VIDEO_BUCKET, dataUrlToBuffer, getJsonBody, getSupabase, json, methodNotAllowed, requireStaff, safeName, serviceErrorMessage } = require('../_lib/service');
+import crypto from 'crypto';
+import { VIDEO_BUCKET, dataUrlToBuffer, getJsonBody, getSupabase, json, methodNotAllowed, requireStaff, safeName, serviceErrorMessage } from '../_lib/service.js';
 
 function normalizeNationalId(value) {
   return String(value || '').trim().toUpperCase().replace(/\s+/g, '');
@@ -63,4 +63,4 @@ async function handler(req, res) {
   }
 }
 
-module.exports = handler;
+export default handler;

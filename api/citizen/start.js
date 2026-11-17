@@ -1,4 +1,4 @@
-const { createSessionCookie, getJsonBody, getSupabase, json, methodNotAllowed, normalizeCertificateNumber, publicCase } = require('../_lib/service');
+import { createSessionCookie, getJsonBody, getSupabase, json, methodNotAllowed, normalizeCertificateNumber, publicCase } from '../_lib/service.js';
 
 async function handler(req, res) {
   try {
@@ -23,4 +23,4 @@ async function handler(req, res) {
   }
 }
 
-module.exports = handler;
+export default handler;

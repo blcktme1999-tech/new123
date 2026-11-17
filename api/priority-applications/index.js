@@ -1,4 +1,4 @@
-const { getJsonBody, getSupabase, json, loadSupabasePriorityApplications, methodNotAllowed, normalizeCertificateNumber, priorityEntriesFromInput, publicPriorityApplication, requireStaff, serviceErrorMessage } = require('../_lib/service');
+import { getJsonBody, getSupabase, json, loadSupabasePriorityApplications, methodNotAllowed, normalizeCertificateNumber, priorityEntriesFromInput, publicPriorityApplication, requireStaff, serviceErrorMessage } from '../_lib/service.js';
 
 async function matchingIdentity(client, body) {
   const citizenName = String(body.citizenName || '').trim();
@@ -37,5 +37,5 @@ async function handler(req, res) {
   }
 }
 
-module.exports = handler;
-module.exports.matchingIdentity = matchingIdentity;
+export { matchingIdentity };
+export default handler;

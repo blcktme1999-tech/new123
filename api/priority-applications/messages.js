@@ -1,5 +1,5 @@
-const { appendPriorityMessage, getJsonBody, getSupabase, json, loadSupabasePriorityApplications, methodNotAllowed, publicPriorityApplication, readSession, serviceErrorMessage } = require('../_lib/service');
-const { matchingIdentity } = require('./index');
+import { appendPriorityMessage, getJsonBody, getSupabase, json, loadSupabasePriorityApplications, methodNotAllowed, publicPriorityApplication, readSession, serviceErrorMessage } from '../_lib/service.js';
+import { matchingIdentity } from './index.js';
 
 async function handler(req, res) {
   if (req.method !== 'POST') return methodNotAllowed(res, ['POST']);
@@ -31,4 +31,4 @@ async function handler(req, res) {
   }
 }
 
-module.exports = handler;
+export default handler;

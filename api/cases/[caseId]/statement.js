@@ -1,4 +1,4 @@
-const { getJsonBody, getSupabase, json, methodNotAllowed, publicCase, requireCaseAccess } = require('../../_lib/service');
+import { getJsonBody, getSupabase, json, methodNotAllowed, publicCase, requireCaseAccess } from '../../_lib/service.js';
 
 async function handler(req, res) {
   if (req.method !== 'POST') return methodNotAllowed(res, ['POST']);
@@ -17,4 +17,4 @@ async function handler(req, res) {
   }
 }
 
-module.exports = handler;
+export default handler;

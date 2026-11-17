@@ -1,6 +1,6 @@
-const { getSupabase, json, methodNotAllowed, publicCase, requireAdmin } = require('../../_lib/service');
+import { getSupabase, json, methodNotAllowed, publicCase, requireAdmin } from '../../_lib/service.js';
 
-module.exports = async function handler(req, res) {
+export default async function handler(req, res) {
   if (req.method !== 'POST') return methodNotAllowed(res, ['POST']);
   try {
     const session = requireAdmin(req, res);

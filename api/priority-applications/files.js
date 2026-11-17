@@ -1,4 +1,4 @@
-const { VIDEO_BUCKET, attachmentTooLarge, createSignedUpload, getJsonBody, getSupabase, json, methodNotAllowed, normalizeCertificateNumber, publicFile, readSession, safeName, serviceErrorMessage } = require('../_lib/service');
+import { VIDEO_BUCKET, attachmentTooLarge, createSignedUpload, getJsonBody, getSupabase, json, methodNotAllowed, normalizeCertificateNumber, publicFile, readSession, safeName, serviceErrorMessage } from '../_lib/service.js';
 
 function storedFileName(applicationId, originalName) {
   return `priority/${applicationId}/${Date.now()}-${safeName(originalName)}`;
@@ -74,4 +74,4 @@ async function handler(req, res) {
   }
 }
 
-module.exports = handler;
+export default handler;

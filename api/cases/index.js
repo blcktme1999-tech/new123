@@ -1,6 +1,6 @@
-const { ensureCaseNumber, getJsonBody, getSupabase, json, methodNotAllowed, normalizeCertificateNumber, publicCase, requireStaff, serviceErrorMessage } = require('../_lib/service');
+import { ensureCaseNumber, getJsonBody, getSupabase, json, methodNotAllowed, normalizeCertificateNumber, publicCase, requireStaff, serviceErrorMessage } from '../_lib/service.js';
 
-module.exports = async function handler(req, res) {
+export default async function handler(req, res) {
   if (!['GET', 'POST'].includes(req.method)) return methodNotAllowed(res, ['GET', 'POST']);
   try {
     const client = getSupabase();

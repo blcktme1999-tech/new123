@@ -1,4 +1,4 @@
-const { bcrypt, createSessionCookie, ensureCaseNumber, ensureDefaultAdmin, getSupabase, json, methodNotAllowed, normalizeCaseNumber, normalizeCertificateNumber, publicCase, publicUser, readSession, serviceErrorMessage } = require('./_lib/service');
+import { bcrypt, createSessionCookie, ensureCaseNumber, ensureDefaultAdmin, getSupabase, json, methodNotAllowed, normalizeCaseNumber, normalizeCertificateNumber, publicCase, publicUser, readSession, serviceErrorMessage } from './_lib/service.js';
 
 function getQuery(req) {
   const host = req.headers.host || 'localhost';
@@ -7,7 +7,7 @@ function getQuery(req) {
 
 const CASE_COLUMNS = 'id,citizen_name,national_id,case_number,certificate_number,case_type,case_title,case_summary,document_case,document_official,document_content,status,interview_status,assigned_user_id,created_at,approved_at';
 
-module.exports = async function handler(req, res) {
+export default async function handler(req, res) {
   if (req.method !== 'GET') return methodNotAllowed(res, ['GET']);
   try {
     const query = getQuery(req);
