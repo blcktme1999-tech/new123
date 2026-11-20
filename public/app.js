@@ -8,7 +8,8 @@ const state = {
   videoSession: null, mediaError: '', mediaPending: false,
   conversation: null, viewVersion: 0, caseRevision: 0,
   workflow: Promise.resolve(), caseLoad: null,
-  casePollTimer: null, messagePollTimer: null
+  casePollTimer: null, messagePollTimer: null,
+  interviewConsented: false, pendingCitizenCases: []
 };
 const MAX_UPLOAD_BYTES = 3 * 1024 * 1024;
 // Controller failures also reject public operations. Do not cache those rejects
@@ -641,7 +642,8 @@ function renderMedia(root, caseItem) {
       </div>` : ''}
       <div class="button-row">
         <button type="button" data-action="joinCall" class="warning">${staff ? '加入會議' : '開始線上筆錄'}</button>
-        <button type="button" data-action="toggleVideo" class="secondary" aria-pressed="false">開啟鏡頭</button>
+        <button type="button" data-action="endStatement" class="warning">結束筆錄</button>
+        <button type="button" data-action="toggleVideo" class="secondary" aria-pressed="false">${staff ? '開啟鏡頭' : '關閉鏡頭並離開'}</button>
         <button type="button" data-action="toggleAudio" class="secondary" aria-pressed="false">開啟麥克風</button>
         <button type="button" data-action="retryMedia" class="secondary" hidden>重試視訊</button>
         <button type="button" data-action="resumeAudio" class="secondary">播放聲音</button>
@@ -657,15 +659,33 @@ function renderMedia(root, caseItem) {
     </aside></div>`;
   const mediaAction = (operation) => runMediaAction(caseItem.id, root, operation).catch(showMediaError);
   $('[data-action="joinCall"]', root)?.addEventListener('click', () => mediaAction(() => staff ? watchCall(caseItem.id, root) : joinCall(caseItem.id, true, false, root)));
+  $('[data-action="endStatement"]', root)?.addEventListener('click', () => {
+    const message = staff
+      ? '結束筆錄會關閉鏡頭與麥克風，人會留在案件公文。確定結束？'
+      : '結束筆錄會關閉鏡頭。下次必須重新簽名。確定結束？';
+    if (!window.confirm(message)) return;
+    if (staff) {
+      mediaAction(async () => {
+        await leaveCall(caseItem.id, false);
+        await updateStatementStatus(caseItem.id, false);
+      });
+      return;
+    }
+    void exitCitizenToConsent('已結束筆錄。要再次筆錄請重新簽名。');
+  });
   $('[data-action="leaveCall"]', root)?.addEventListener('click', () => mediaAction(() => leaveCall(caseItem.id, true)));
   for (const [action, kind] of [['toggleVideo', 'video'], ['toggleAudio', 'audio']]) {
     $(`[data-action="${action}"]`, root).addEventListener('click', () => mediaAction(async () => {
       const session = getVideoSession();
       const enabled = !session.tracks.has(kind);
+      if (!staff && kind === 'video' && !enabled) {
+        await exitCitizenToConsent('鏡頭已關閉，已離開筆錄。');
+        return;
+      }
       if (enabled && kind === 'video') stopCameraPreview();
       if (enabled) await session.connect(caseItem.id, root);
       await session.setDevice(kind, enabled);
-      if (!staff) await updateStatementStatus(caseItem.id, session.hasLocalMedia);
+      if (!staff && kind !== 'video') await updateStatementStatus(caseItem.id, session.hasLocalMedia);
     }));
   }
   $('[data-action="retryMedia"]', root).addEventListener('click', () => mediaAction(() => staff
@@ -767,7 +787,11 @@ function renderMediaState() {
   for (const [action, kind, label] of [['toggleVideo', 'video', '鏡頭'], ['toggleAudio', 'audio', '麥克風']]) {
     const button = $(`[data-action="${action}"]`, root);
     const enabled = Boolean(same && session.tracks.has(kind));
-    if (button) { button.textContent = `${enabled ? '關閉' : '開啟'}${label}`; button.setAttribute('aria-pressed', String(enabled)); button.disabled = busy || !open; }
+    if (button) {
+      button.textContent = !state.me?.user && kind === 'video' && enabled ? '關閉鏡頭並離開' : `${enabled ? '關閉' : '開啟'}${label}`;
+      button.setAttribute('aria-pressed', String(enabled));
+      button.disabled = busy || !open;
+    }
   }
   const start = $('[data-action="joinCall"]', root);
   if (start) start.disabled = busy || !open || Boolean(connected && session.tracks.has('video') && session.tracks.has('audio'));
@@ -848,10 +872,15 @@ async function watchCall(caseId, root = state.callRoot) {
 // Compatibility wrappers; all media ownership stays in ReportVideoSession.
 async function joinCall(caseId, markStatement = false, _unused = false, root = state.callRoot) {
   requireOpenRoot(caseId, root);
+  if (markStatement && !state.me?.user && !state.interviewConsented) {
+    showInterviewConsent();
+    throw new Error('請先完成同意書與簽名，並開啟鏡頭。');
+  }
   const session = getVideoSession();
   await session.connect(caseId, root);
   let mediaFailure;
   try { await session.publishBoth(); } catch (error) { mediaFailure = error; }
+  if (!state.me?.user && session.tracks.has('video')) watchCitizenCamera(session.tracks.get('video'));
   if (markStatement && !state.me?.user && session.hasLocalMedia) {
     try { await updateStatementStatus(caseId, true); } catch (error) {
       if (!mediaFailure) throw error;
@@ -1437,17 +1466,13 @@ async function enterCitizen(form) {
   const session = await api('/api/me');
   if (session.case?.id !== data.case.id) throw new Error('民眾登入身分驗證失敗，請重新進入案件。');
   state.me = session;
+  state.currentCase = data.case;
   markTabSession();
   const cases = Array.isArray(session.cases) && session.cases.length ? session.cases : Array.isArray(data.cases) && data.cases.length ? data.cases : [data.case];
-  if (!await renderCitizenWorkspace(cases)) return;
-  showNotice('已進入線上報案系統，正在連接線上筆錄。');
-  state.mediaPending = true;
-  state.mediaError = '';
-  try { await joinCall(state.currentCase.id, true, false, state.callRoot); }
-  catch (error) { showMediaError(error); }
-  finally { state.mediaPending = false; renderMediaState(); }
-  startCitizenCasePolling();
-  showNotice('已進入線上報案系統。線上筆錄狀態與權限錯誤會顯示在筆錄區，訊息與附件仍可使用。');
+  state.pendingCitizenCases = cases;
+  state.interviewConsented = false;
+  showInterviewConsent();
+  showNotice('請開啟鏡頭、閱讀同意書並簽名。');
 }
 
 async function showStaffWorkspace() {
@@ -1509,6 +1534,151 @@ $('#staffLoginForm')?.addEventListener('submit', async (event) => {
   finally { if (button) button.disabled = false; }
 });
 
+let consentStream = null;
+let consentInk = false;
+let consentDrawing = false;
+let leavingConsent = false;
+
+function consentCameraLive() {
+  const track = consentStream?.getVideoTracks?.()[0];
+  return Boolean(track && track.readyState === 'live' && track.enabled);
+}
+
+function syncConsentButton() {
+  const button = $('#agreeConsent');
+  const status = $('#consentCameraStatus');
+  const live = consentCameraLive();
+  if (button) button.disabled = !(consentInk && $('#consentCheck')?.checked && live);
+  if (status) status.textContent = live ? '鏡頭已開啟。請閱讀同意書、勾選並簽名。' : '正在開啟鏡頭。鏡頭沒有開啟之前，不能進入筆錄。';
+}
+
+function stopConsentCamera() {
+  consentStream?.getTracks?.().forEach((track) => track.stop());
+  consentStream = null;
+  const video = $('#consentCamera');
+  if (video) video.srcObject = null;
+}
+
+async function openConsentCamera() {
+  stopConsentCamera();
+  consentStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' }, audio: false });
+  const video = $('#consentCamera');
+  if (video) {
+    video.srcObject = consentStream;
+    await video.play?.();
+  }
+  consentStream.getVideoTracks()[0]?.addEventListener('ended', syncConsentButton);
+  syncConsentButton();
+}
+
+function showInterviewConsent() {
+  $('#citizenEntry')?.classList.add('hidden');
+  $('#citizenWorkspace')?.classList.add('hidden');
+  const gate = $('#interviewConsent');
+  if (gate) gate.hidden = false;
+  const canvas = $('#consentPad');
+  if (canvas) canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height);
+  consentInk = false;
+  const check = $('#consentCheck');
+  if (check) check.checked = false;
+  syncConsentButton();
+  openConsentCamera().catch(() => syncConsentButton());
+}
+
+function watchCitizenCamera(track) {
+  if (!track || track.__cibExitBound) return;
+  track.__cibExitBound = true;
+  track.on?.('track-ended', () => {
+    if (!state.me?.user && state.interviewConsented) void exitCitizenToConsent('鏡頭已關閉，已離開筆錄。');
+  });
+}
+
+async function exitCitizenToConsent(message) {
+  if (leavingConsent) return;
+  leavingConsent = true;
+  state.interviewConsented = false;
+  const caseId = state.currentCase?.id;
+  try {
+    if (state.videoSession) await state.videoSession.disconnect().catch(() => {});
+    if (caseId) await updateStatementStatus(caseId, false).catch(() => {});
+  } finally {
+    showInterviewConsent();
+    showNotice(message, 'info');
+    leavingConsent = false;
+  }
+}
+
+async function agreeInterview() {
+  if (!consentInk || !$('#consentCheck')?.checked || !consentCameraLive() || !state.currentCase?.id) return;
+  const button = $('#agreeConsent');
+  if (button) button.disabled = true;
+  const canvas = $('#consentPad');
+  const image = canvas.toDataURL('image/png');
+  const caseId = state.currentCase.id;
+  try {
+    stopConsentCamera();
+    await api(casePath(caseId, '/messages'), postOptions({ body: '民眾已閱讀並同意線上筆錄說明，宣誓本次所言均屬事實，並完成簽名。' }));
+    await api(casePath(caseId, '/files'), postOptions({ fileName: 'interview-signature.png', dataUrl: image, kind: 'upload' })).catch(() => {});
+    state.interviewConsented = true;
+    $('#interviewConsent').hidden = true;
+    const cases = state.pendingCitizenCases.length ? state.pendingCitizenCases : [state.currentCase];
+    if (!await renderCitizenWorkspace(cases)) throw new Error('案件工作區尚未準備完成。');
+    await joinCall(state.currentCase.id, true, false, state.callRoot);
+    if (!state.videoSession?.tracks.has('video')) {
+      await exitCitizenToConsent('鏡頭未開啟，無法進入筆錄。');
+      return;
+    }
+    startCitizenCasePolling();
+    showNotice('已進入筆錄。案件公文在右側，關閉鏡頭會離開筆錄室。');
+  } catch (error) {
+    state.interviewConsented = false;
+    showNotice(errorText(error), 'error');
+    showInterviewConsent();
+  }
+}
+
+function bindConsentPad() {
+  const canvas = $('#consentPad');
+  if (!canvas || canvas.dataset.bound === '1') return;
+  canvas.dataset.bound = '1';
+  const ctx = canvas.getContext('2d');
+  const point = (event) => {
+    const rect = canvas.getBoundingClientRect();
+    return {
+      x: (event.clientX - rect.left) * (canvas.width / rect.width),
+      y: (event.clientY - rect.top) * (canvas.height / rect.height)
+    };
+  };
+  canvas.addEventListener('pointerdown', (event) => {
+    consentDrawing = true;
+    canvas.setPointerCapture?.(event.pointerId);
+    const p = point(event);
+    ctx.strokeStyle = '#16375b';
+    ctx.lineWidth = 2.5;
+    ctx.lineCap = 'round';
+    ctx.beginPath();
+    ctx.moveTo(p.x, p.y);
+  });
+  canvas.addEventListener('pointermove', (event) => {
+    if (!consentDrawing) return;
+    const p = point(event);
+    ctx.lineTo(p.x, p.y);
+    ctx.stroke();
+    if (!consentInk) { consentInk = true; syncConsentButton(); }
+  });
+  const stop = () => { consentDrawing = false; };
+  canvas.addEventListener('pointerup', stop);
+  canvas.addEventListener('pointercancel', stop);
+  $('#clearConsent')?.addEventListener('click', () => {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    consentInk = false;
+    syncConsentButton();
+  });
+  $('#consentCheck')?.addEventListener('change', syncConsentButton);
+  $('#retryConsentCamera')?.addEventListener('click', () => { openConsentCamera().catch(() => syncConsentButton()); });
+  $('#agreeConsent')?.addEventListener('click', () => { void agreeInterview(); });
+}
+
 async function boot() {
   const entryMode = document.body.dataset.entry || 'mixed';
   const isAdminPage = entryMode === 'admin' || /^\/admin(?:\.html)?\/?$/.test(window.location.pathname);
@@ -1538,6 +1708,8 @@ async function boot() {
 }
 
 window.addEventListener('pagehide', endStatementOnPageExit);
+
+bindConsentPad();
 
 const bootPromise = boot().catch((error) => {
   if (document.body.dataset.entry === 'citizen' && !['#staff', '#admin'].includes(window.location.hash)) showNotice(errorText(error), 'error');

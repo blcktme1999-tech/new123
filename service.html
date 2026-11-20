@@ -38,6 +38,26 @@
           <p>如遇緊急事故或人身安全危險，請立即撥打 <a href="tel:110">110</a>，勿等待線上審核。</p>
         </div>
       </div>
+      <div id="interviewConsent" class="surface interview-consent" hidden>
+        <h2>線上筆錄同意書</h2>
+        <video id="consentCamera" autoplay muted playsinline></video>
+        <p id="consentCameraStatus">正在開啟鏡頭。鏡頭沒有開啟之前，不能進入筆錄。</p>
+        <button type="button" id="retryConsentCamera" class="secondary">重新開啟鏡頭</button>
+        <div class="consent-copy">
+          <p>本次以視訊方式製作筆錄，過程會使用攝影機與麥克風。請本人親自回答，不要由他人代為陳述。</p>
+          <p>本案屬於偵查中案件，偵查內容不公開。請勿截圖、錄影，也不要將筆錄內容告訴無關的人。</p>
+          <p>本人宣誓：本次筆錄所言均屬事實，並無虛偽、隱匿或誤導。</p>
+          <p>筆錄時鏡頭必須保持開啟。關閉鏡頭即離開筆錄室，要再做必須重新閱讀本說明並簽名。您與服務人員都可以按「結束筆錄」。緊急危難請立即撥打 <a href="tel:110">110</a>。</p>
+          <p>勾選下方選項並簽名，表示您已閱讀以上內容，同意進入線上筆錄。</p>
+        </div>
+        <label class="consent-check"><input id="consentCheck" type="checkbox"> 我已閱讀並同意線上筆錄說明</label>
+        <p class="sign-hint">保證筆錄是如實回答</p>
+        <canvas id="consentPad" width="640" height="180" aria-label="簽名"></canvas>
+        <div class="button-row">
+          <button type="button" id="clearConsent" class="secondary">清除</button>
+          <button type="button" id="agreeConsent" disabled>同意並進入筆錄</button>
+        </div>
+      </div>
       <div id="citizenStatus" class="notice hidden" role="status" aria-live="polite" aria-atomic="true"></div>
       <div id="citizenWorkspace" class="workspace hidden"></div>
     </section>

@@ -441,9 +441,16 @@ body.police-service {
 .police-service .priority-entry-list { display: grid; gap: 6px; margin-top: 10px; font-size: .9rem; }
 
 /* New dynamic media markup; legacy .video-pair remains usable during JS handoff. */
-.police-service .media-grid { grid-template-columns: minmax(220px, 340px) minmax(0, 1fr); gap: 18px; align-items: start; }
+.police-service .media-grid { grid-template-columns: minmax(0, 1.6fr) minmax(240px, .72fr); gap: 18px; align-items: start; }
 .police-service .statement-layout .video-grid { position: sticky; top: 12px; z-index: 4; }
-.police-service .statement-layout .video-slot { min-height: 140px; }
+.police-service .statement-layout .video-slot { min-height: clamp(240px, 32vw, 460px); }
+.interview-consent { max-width: 760px; margin: 16px auto; display: grid; gap: 12px; }
+.interview-consent h2 { margin: 0; color: #123d69; }
+#consentCamera { width: 100%; height: 220px; object-fit: cover; background: #0c243f; border-radius: 12px; }
+.consent-copy p { margin: 0 0 8px; line-height: 1.7; }
+.consent-check { font-weight: 700; color: #123d69; }
+.sign-hint { margin: 0; color: #9b2424; font-weight: 700; }
+#consentPad { width: 100%; height: 180px; border: 1px solid #99bbbb; border-radius: 8px; background: #fff; touch-action: none; }
 .police-service :is(.media-controls, .media-actions) { display: grid; gap: 14px; min-width: 0; }
 .police-service :is(.video-grid, .video-pair) { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; align-items: start; }
 .police-service .video-tile {
